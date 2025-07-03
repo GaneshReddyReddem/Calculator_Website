@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: aliceblue;
+            padding: 20px;
+            position: relative;
+        }
+
+        body.dark {
+            background: #000000;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 70px;
+            height: 35px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .theme-toggle {
+            background: rgba(240, 248, 255, 0.2);
+            border: 2px solid rgba(240, 248, 255, 0.4);
+            box-shadow: 0 8px 20px rgba(240, 248, 255, 0.2);
+        }
+
+        .dark .theme-toggle:hover {
+            background: rgba(240, 248, 255, 0.3);
+            box-shadow: 0 12px 30px rgba(240, 248, 255, 0.4);
+        }
+
+        .theme-toggle::before {
+            content: '☀️';
+            position: absolute;
+            left: 8px;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+
+        .theme-toggle::after {
+            content: '🌙';
+            position: absolute;
+            right: 8px;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+
+        .theme-slider {
+            width: 27px;
+            height: 27px;
+            background: #000000;
+            border-radius: 50%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .dark .theme-slider {
+            transform: translateX(35px);
+            background: aliceblue;
+            box-shadow: 0 4px 8px rgba(240, 248, 255, 0.3);
+        }
+
+        .calculator-container {
+            position: relative;
+            padding: 35px;
+            border-radius: 30px;
+            backdrop-filter: blur(25px);
+            background: rgba(240, 248, 255, 0.95);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .calculator-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .calculator-container {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid aliceblue;
+            box-shadow: 0 25px 50px rgba(240, 248, 255, 0.25);
+        }
+
+        .dark .calculator-container:hover {
+            box-shadow: 0 35px 70px rgba(240, 248, 255, 0.35);
+        }
+
+        .display {
+            width: 100%;
+            height: 90px;
+            background: rgba(240, 248, 255, 0.9);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            font-size: 2.2rem;
+            font-weight: 300;
+            text-align: right;
+            color: #000000;
+            margin-bottom: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .display:hover {
+            transform: scale(1.02);
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .display {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid aliceblue;
+            color: #ffffff;
+            box-shadow: inset 0 4px 15px rgba(240, 248, 255, 0.1);
+        }
+
+        .dark .display:hover {
+            box-shadow: inset 0 4px 15px rgba(240, 248, 255, 0.15), 0 0 25px rgba(240, 248, 255, 0.3);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .btn {
+            height: 75px;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:active::after {
+            width: 120%;
+            height: 120%;
+        }
+
+        .dark .btn::after {
+            background: rgba(240, 248, 255, 0.2);
+        }
+
+        .btn-number {
+            background: aliceblue;
+            color: #000000;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-number:hover {
+            background: rgba(240, 248, 255, 0.9);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-number:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .dark .btn-number {
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid aliceblue;
+            box-shadow: 0 6px 20px rgba(240, 248, 255, 0.25);
+        }
+
+        .dark .btn-number:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(240, 248, 255, 0.9);
+            box-shadow: 0 12px 35px rgba(240, 248, 255, 0.4);
+        }
+
+        .btn-operator {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-operator:hover {
+            background: linear-gradient(135deg, #ff5252, #ff3838);
+            transform: translateY(-4px) scale(1.08) rotate(2deg);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
+            border: 2px solid rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-operator:active {
+            transform: translateY(-2px) scale(1.05) rotate(1deg);
+        }
+
+        .dark .btn-operator {
+            background: linear-gradient(135deg, #e55039, #c23616);
+            border: 2px solid aliceblue;
+            box-shadow: 0 6px 20px rgba(229, 80, 57, 0.4);
+        }
+
+        .dark .btn-operator:hover {
+            background: linear-gradient(135deg, #ff5252, #ff3838);
+            box-shadow: 0 15px 40px rgba(229, 80, 57, 0.6);
+        }
+
+        .btn-equals {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4);
+            border: 2px solid rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-equals:hover {
+            background: linear-gradient(135deg, #00c4ff, #2980b9);
+            transform: scale(1.1) rotateZ(5deg);
+            box-shadow: 0 15px 40px rgba(0, 210, 255, 0.6);
+            border: 2px solid rgba(0, 210, 255, 0.7);
+        }
+
+        .btn-equals:active {
+            transform: scale(1.08) rotateZ(3deg);
+        }
+
+        .dark .btn-equals {
+            background: linear-gradient(135deg, #0097e6, #2f3542);
+            border: 2px solid aliceblue;
+            box-shadow: 0 6px 20px rgba(0, 151, 230, 0.4);
+        }
+
+        .dark .btn-equals:hover {
+            background: linear-gradient(135deg, #00c4ff, #2980b9);
+            box-shadow: 0 15px 40px rgba(0, 151, 230, 0.6);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #ffa726, #ff7043);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 167, 38, 0.4);
+            border: 2px solid rgba(255, 167, 38, 0.3);
+        }
+
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            transform: translateY(-4px) rotate(-8deg) scale(1.08);
+            box-shadow: 0 15px 40px rgba(255, 167, 38, 0.6);
+            border: 2px solid rgba(255, 167, 38, 0.7);
+        }
+
+        .btn-clear:active {
+            transform: translateY(-2px) rotate(-5deg) scale(1.05);
+        }
+
+        .dark .btn-clear {
+            background: linear-gradient(135deg, #f39801, #e55039);
+            border: 2px solid aliceblue;
+            box-shadow: 0 6px 20px rgba(243, 152, 1, 0.4);
+        }
+
+        .dark .btn-clear:hover {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            box-shadow: 0 15px 40px rgba(243, 152, 1, 0.6);
+        }
+
+        .btn-backspace {
+            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            color: white;
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+            border: 2px solid rgba(156, 39, 176, 0.3);
+        }
+
+        .btn-backspace:hover {
+            background: linear-gradient(135deg, #ab47bc, #7e57c2);
+            transform: translateY(-4px) scale(1.08) rotateX(15deg);
+            box-shadow: 0 15px 40px rgba(156, 39, 176, 0.6);
+            border: 2px solid rgba(156, 39, 176, 0.7);
+        }
+
+        .btn-backspace:active {
+            transform: translateY(-2px) scale(1.05) rotateX(10deg);
+        }
+
+        .dark .btn-backspace {
+            background: linear-gradient(135deg, #8e24aa, #5e35b1);
+            border: 2px solid aliceblue;
+            box-shadow: 0 6px 20px rgba(142, 36, 170, 0.4);
+        }
+
+        .dark .btn-backspace:hover {
+            background: linear-gradient(135deg, #ab47bc, #7e57c2);
+            box-shadow: 0 15px 40px rgba(142, 36, 170, 0.6);
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        .btn-zero:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .dark .btn-zero:hover {
+            box-shadow: 0 12px 35px rgba(240, 248, 255, 0.4);
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #000000;
+            font-size: 1rem;
+            opacity: 0.8;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(240, 248, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer:hover {
+            opacity: 1;
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: rgba(240, 248, 255, 0.9);
+        }
+
+        .dark .footer {
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid aliceblue;
+            box-shadow: 0 8px 25px rgba(240, 248, 255, 0.2);
+        }
+
+        .dark .footer:hover {
+            box-shadow: 0 15px 35px rgba(240, 248, 255, 0.3);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        @media (max-width: 480px) {
+            .theme-toggle {
+                top: 20px;
+                right: 20px;
+                width: 60px;
+                height: 30px;
+            }
+            
+            .theme-slider {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .dark .theme-slider {
+                transform: translateX(30px);
+            }
+            
+            .calculator-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .display {
+                font-size: 1.8rem;
+                height: 70px;
+                padding: 20px;
+            }
+            
+            .btn {
+                height: 65px;
+                font-size: 1.2rem;
+            }
+            
+            .buttons {
+                gap: 12px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .calculator-container {
+                padding: 45px;
+            }
+            
+            .display {
+                height: 110px;
+                font-size: 2.8rem;
+            }
+            
+            .btn {
+                height: 85px;
+                font-size: 1.4rem;
+            }
+        }
+
+        .pulse {
+            animation: pulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .glow {
+            animation: glow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
+            50% { box-shadow: 0 0 40px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 0, 0, 0.2); }
+            100% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
+        }
+
+        .dark .glow {
+            animation: glow-dark 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes glow-dark {
+            0% { box-shadow: 0 6px 20px rgba(240, 248, 255, 0.25); }
+            50% { box-shadow: 0 0 40px rgba(240, 248, 255, 0.6), 0 0 60px rgba(240, 248, 255, 0.3); }
+            100% { box-shadow: 0 6px 20px rgba(240, 248, 255, 0.25); }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="theme-slider"></div>
+    </div>
+    
+    <div class="calculator-container">
+        <div class="display" id="display">0</div>
+        
+        <div class="buttons">
+            <button class="btn btn-clear" onclick="clearAll()">AC</button>
+            <button class="btn btn-backspace" onclick="backspace()">⌫</button>
+            <button class="btn btn-operator" onclick="percentage()">%</button>
+            <button class="btn btn-operator" onclick="appendOperator('/')">÷</button>
+            
+            <button class="btn btn-number" onclick="appendNumber('7')">7</button>
+            <button class="btn btn-number" onclick="appendNumber('8')">8</button>
+            <button class="btn btn-number" onclick="appendNumber('9')">9</button>
+            <button class="btn btn-operator" onclick="appendOperator('*')">×</button>
+            
+            <button class="btn btn-number" onclick="appendNumber('4')">4</button>
+            <button class="btn btn-number" onclick="appendNumber('5')">5</button>
+            <button class="btn btn-number" onclick="appendNumber('6')">6</button>
+            <button class="btn btn-operator" onclick="appendOperator('-')">−</button>
+            
+            <button class="btn btn-number" onclick="appendNumber('1')">1</button>
+            <button class="btn btn-number" onclick="appendNumber('2')">2</button>
+            <button class="btn btn-number" onclick="appendNumber('3')">3</button>
+            <button class="btn btn-operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="btn btn-number btn-zero" onclick="appendNumber('0')">0</button>
+            <button class="btn btn-number" onclick="appendDecimal()">.</button>
+            <button class="btn btn-equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        © 2025 All rights reserved. Designed and developed by Ganesh Reddy.
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = '0';
+        let operator = null;
+        let previousInput = null;
+        let waitingForOperand = false;
+        let expression = '';
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('calculatorTheme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+        }
+
+        function updateDisplay() {
+            // Show the full expression until equals is pressed
+            if (expression && !waitingForOperand) {
+                display.textContent = expression;
+            } else {
+                display.textContent = currentInput;
+            }
+            display.classList.add('glow');
+            setTimeout(() => display.classList.remove('glow'), 500);
+        }
+
+        function appendNumber(num) {
+            if (waitingForOperand) {
+                currentInput = num;
+                waitingForOperand = false;
+                expression += num;
+            } else {
+                currentInput = currentInput === '0' ? num : currentInput + num;
+                if (expression && !expression.endsWith(num)) {
+                    expression += num;
+                } else if (!expression) {
+                    expression = num;
+                }
+            }
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function appendDecimal() {
+            if (waitingForOperand) {
+                currentInput = '0.';
+                waitingForOperand = false;
+                expression += '0.';
+            } else if (currentInput.indexOf('.') === -1) {
+                currentInput += '.';
+                expression += '.';
+            }
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function appendOperator(nextOperator) {
+            const inputValue = parseFloat(currentInput);
+
+            if (previousInput === null) {
+                previousInput = inputValue;
+            } else if (operator) {
+                const currentValue = previousInput || 0;
+                const newValue = performCalculation(currentValue, inputValue, operator);
+
+                currentInput = String(newValue);
+                previousInput = newValue;
+            }
+
+            waitingForOperand = true;
+            operator = nextOperator;
+            
+            // Update expression to show the operator
+            if (expression && !isOperator(expression.slice(-1))) {
+                expression += ' ' + getOperatorSymbol(nextOperator) + ' ';
+            }
+            
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function calculate() {
+            const inputValue = parseFloat(currentInput);
+
+            if (previousInput !== null && operator) {
+                const newValue = performCalculation(previousInput, inputValue, operator);
+                currentInput = String(newValue);
+                previousInput = null;
+                operator = null;
+                waitingForOperand = true;
+                expression = ''; // Clear expression after calculation
+                updateDisplay();
+            }
+            addPulseEffect(event.target);
+        }
+
+        function performCalculation(firstOperand, secondOperand, operator) {
+            switch (operator) {
+                case '+':
+                    return firstOperand + secondOperand;
+                case '-':
+                    return firstOperand - secondOperand;
+                case '*':
+                    return firstOperand * secondOperand;
+                case '/':
+                    return secondOperand !== 0 ? firstOperand / secondOperand : 0;
+                default:
+                    return secondOperand;
+            }
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = null;
+            operator = null;
+            waitingForOperand = false;
+            expression = '';
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function backspace() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+                if (expression.length > 0) {
+                    expression = expression.slice(0, -1);
+                }
+            } else {
+                currentInput = '0';
+                expression = '';
+            }
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function percentage() {
+            const value = parseFloat(currentInput);
+            currentInput = String(value / 100);
+            expression = currentInput;
+            updateDisplay();
+            addPulseEffect(event.target);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('calculatorTheme', isDark ? 'dark' : 'light');
+            
+            // Add animation to theme toggle
+            const toggle = document.querySelector('.theme-toggle');
+            toggle.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                toggle.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        function addPulseEffect(element) {
+            element.classList.add('pulse');
+            setTimeout(() => element.classList.remove('pulse'), 300);
+        }
+
+        function isOperator(char) {
+            return ['+', '-', '×', '÷', '*', '/'].includes(char);
+        }
+
+        function getOperatorSymbol(op) {
+            switch (op) {
+                case '+': return '+';
+                case '-': return '−';
+                case '*': return '×';
+                case '/': return '÷';
+                default: return op;
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            const key = e.key;
+            
+            if (key >= '0' && key <= '9') {
+                appendNumber(key);
+            } else if (key === '.') {
+                appendDecimal();
+            } else if (key === '+') {
+                appendOperator('+');
+            } else if (key === '-') {
+                appendOperator('-');
+            } else if (key === '*') {
+                appendOperator('*');
+            } else if (key === '/') {
+                e.preventDefault();
+                appendOperator('/');
+            } else if (key === 'Enter' || key === '=') {
+                e.preventDefault();
+                calculate();
+            } else if (key === 'Escape' || key === 'c' || key === 'C') {
+                clearAll();
+            } else if (key === 'Backspace') {
+                e.preventDefault();
+                backspace();
+            } else if (key === '%') {
+                percentage();
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
